@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
-import { fetchNotes, deleteNote } from '../../services/noteService';
+import { fetchNotes } from '../../services/noteService';
 import NoteList from '../NoteList/NoteList';
 import SearchBox from '../SearchBox/SearchBox';
 import Modal from '../Modal/Modal';
@@ -14,7 +14,7 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   // Запрос данных с учетом текущей страницы и поиска
   const { data, isLoading, isError, isPlaceholderData} = useQuery({
@@ -24,13 +24,13 @@ export default function App() {
   placeholderData: keepPreviousData, 
 });
 
-  // Мутация для удаления
-  const deleteMutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-    },
-  });
+  // // Мутация для удаления
+  // const deleteMutation = useMutation({
+  //   mutationFn: deleteNote,
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['notes'] });
+  //   },
+  // });
 
   // Функция поиска с задержкой (Debounce)
   const debouncedSearch = useDebouncedCallback((value: string) => {
