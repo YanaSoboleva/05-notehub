@@ -1,34 +1,35 @@
-import ReactPaginate from 'react-paginate';
-import css from './Pagination.module.css';
+import type { ComponentType } from "react";
+import ReactPaginateModule from "react-paginate";
+import type { ReactPaginateProps } from "react-paginate";
+import css from "./Pagination.module.css";
+
+// Спеціальний хак для сумісності Vite + ReactPaginate
+type ModuleWithDefault<T> = { default: T };
+
+const ReactPaginate = (
+  (ReactPaginateModule as unknown as ModuleWithDefault<ComponentType<ReactPaginateProps>>).default || 
+  ReactPaginateModule
+) as ComponentType<ReactPaginateProps>;
 
 interface PaginationProps {
   pageCount: number;
   onPageChange: (selectedPage: number) => void;
-  forcePage?: number; // Дозволяє синхронізувати стан ззовні
+  forcePage?: number;
 }
 
 export default function Pagination({ pageCount, onPageChange, forcePage }: PaginationProps) {
   return (
     <ReactPaginate
-      // Текст для кнопок навігації
       previousLabel={'<'}
       nextLabel={'>'}
       breakLabel={'...'}
-      
-      // Кількість сторінок з бекенду
       pageCount={pageCount}
-      
-      // Скільки сторінок показувати навколо поточної
       marginPagesDisplayed={2}
       pageRangeDisplayed={5}
-      
-      // Обробник кліку
       onPageChange={(data) => onPageChange(data.selected)}
-      
-      // Поточна сторінка (нуль-базова)
       forcePage={forcePage}
-
-      // CSS класи зі стилів GoIT
+      
+      // Стилі (переконайтеся, що вони є в CSS модулі)
       containerClassName={css.pagination}
       pageClassName={css.pageItem}
       pageLinkClassName={css.pageLink}

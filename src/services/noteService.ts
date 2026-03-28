@@ -11,30 +11,42 @@ const noteApi = axios.create({
   },
 });
 
-export interface FetchNotesParams {
+// 1. Виправлений інтерфейс відповіді (тільки те, що реально приходить з API)
+interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
+
+// 2. Тип для створення нотатки (суворо 3 поля)
+export type CreateNoteData = {
+  title: string;
+  content: string;
+  tag: string;
+};
+
+interface FetchParams {
   page?: number;
   perPage?: number;
   search?: string;
 }
 
-export interface FetchNotesResponse {
-  notes: Note[];
-  totalNotes: number;
-  totalPages: number;
-  currentPage: number;
-}
-
-export const fetchNotes = async (params: FetchNotesParams): Promise<FetchNotesResponse> => {
-  const { data } = await noteApi.get<FetchNotesResponse>('/notes', { params });
-  return data;
+export const fetchNotes = async ({
+  page = 1,
+  perPage = 12,
+  search = '',
+}: FetchParams): Promise<FetchNotesResponse> => {
+  const response = await noteApi.get<FetchNotesResponse>('/notes', {
+    params: { page, perPage, search },
+  });
+  return response.data;
 };
 
-export const createNote = async (note: Omit<Note, 'id' | 'createdAt'>): Promise<Note> => {
-  const { data } = await noteApi.post<Note>('/notes', note);
-  return data;
+// 3. Функція createNote тепер приймає лише необхідні дані
+export const createNote = async (noteData: CreateNoteData): Promise<Note> => {
+  const response = await noteApi.post<Note>('/notes', noteData);
+  return response.data;
 };
 
-export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await noteApi.delete<Note>(`/notes/${id}`);
-  return data;
+export const deleteNote = async (id: string): Promise<void> => {
+  await noteApi.delete(`/notes/${id}`);
 };

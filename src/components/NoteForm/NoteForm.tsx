@@ -5,6 +5,11 @@ import { createNote } from '../../services/noteService';
 import type { NoteTag } from '../../types/note';
 import css from './NoteForm.module.css';
 
+// 1. Створюємо інтерфейс з конкретною назвою NoteFormProps
+interface NoteFormProps {
+  onClose: () => void;
+}
+
 const NoteSchema = Yup.object().shape({
   title: Yup.string()
     .min(3, 'Title must be at least 3 characters')
@@ -14,8 +19,10 @@ const NoteSchema = Yup.object().shape({
   tag: Yup.string().required('Tag is required'),
 });
 
-export default function NoteForm({ onClose }: { onClose: () => void }) {
+// Використовуємо інтерфейс для типізації пропсів
+export default function NoteForm({ onClose }: NoteFormProps) {
   const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
@@ -26,7 +33,7 @@ export default function NoteForm({ onClose }: { onClose: () => void }) {
 
   return (
     <Formik
-      initialValues={{ title: '', content: '', tag: 'Todo' as NoteTag }}
+      initialValues={{ title: '', content: '', tag: '' as NoteTag }}
       validationSchema={NoteSchema}
       onSubmit={(values) => mutation.mutate(values)}
     >
@@ -34,31 +41,40 @@ export default function NoteForm({ onClose }: { onClose: () => void }) {
         <Form className={css.form}>
           <div className={css.formGroup}>
             <label htmlFor="title">Title</label>
-            <Field name="title" className={css.input} placeholder="Enter title..." />
+            <Field name="title" id="title" className={css.input} />
             <ErrorMessage name="title" component="span" className={css.error} />
           </div>
 
           <div className={css.formGroup}>
             <label htmlFor="content">Content</label>
-            <Field as="textarea" name="content" rows={5} className={css.textarea} placeholder="Enter content..." />
+            <Field as="textarea" name="content" id="content" rows={5} className={css.textarea} />
             <ErrorMessage name="content" component="span" className={css.error} />
           </div>
 
           <div className={css.formGroup}>
             <label htmlFor="tag">Tag</label>
-            <Field as="select" name="tag" className={css.select}>
+            <Field as="select" name="tag" id="tag" className={css.select}>
+              <option value="" disabled>Select a tag</option>
               <option value="Todo">Todo</option>
               <option value="Work">Work</option>
               <option value="Personal">Personal</option>
               <option value="Meeting">Meeting</option>
               <option value="Shopping">Shopping</option>
             </Field>
+            {/* 2. Додано ErrorMessage для поля tag */}
+            <ErrorMessage name="tag" component="span" className={css.error} />
           </div>
 
           <div className={css.actions}>
-            <button type="button" className={css.cancelButton} onClick={onClose}>Cancel</button>
-            <button type="submit" className={css.submitButton} disabled={isSubmitting}>
-              Create note
+            <button type="button" className={css.cancelButton} onClick={onClose}>
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className={css.submitButton} 
+              disabled={isSubmitting || mutation.isPending}
+            >
+              {mutation.isPending ? 'Creating...' : 'Create note'}
             </button>
           </div>
         </Form>

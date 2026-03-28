@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import { fetchNotes, deleteNote } from '../../services/noteService';
 import NoteList from '../NoteList/NoteList';
@@ -17,10 +17,12 @@ export default function App() {
   const queryClient = useQueryClient();
 
   // Запрос данных с учетом текущей страницы и поиска
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['notes', page, search],
-    queryFn: () => fetchNotes({ page, perPage: 12, search }),
-  });
+  const { data, isLoading, isError, isPlaceholderData} = useQuery({
+  queryKey: ['notes', page, search],
+  queryFn: () => fetchNotes({ page, perPage: 12, search }),
+  // Цей рядок забезпечує плавну зміну сторінок:
+  placeholderData: keepPreviousData, 
+});
 
   // Мутация для удаления
   const deleteMutation = useMutation({
@@ -54,7 +56,7 @@ export default function App() {
         </button>
       </header>
 
-      <main>
+      {/* <main>
         {isLoading && <p className={css.status}>Loading notes...</p>}
         {isError && <p className={css.status}>Error fetching notes.</p>}
         
@@ -66,6 +68,19 @@ export default function App() {
         ) : (
           !isLoading && <p className={css.status}>No notes found.</p>
         )}
+      </main> */}
+      <main style={{ opacity: isPlaceholderData ? 0.6 : 1, transition: 'opacity 200ms' }}>
+      {/* Використовуємо isLoading тільки для першого завантаження */}
+      {isLoading && !data && <p className={css.status}>Loading notes...</p>}
+      
+      {/* ТЕПЕР isError ВИКОРИСТОВУЄТЬСЯ — ESLint буде задоволений */}
+      {isError && <p className={css.status}>Something went wrong. Please try again.</p>}
+      
+      {data && data.notes.length > 0 ? (
+        <NoteList notes={data.notes} />
+      ) : (
+        !isLoading && !isError && <p className={css.status}>No notes found.</p>
+      )}
       </main>
 
       {isModalOpen && (

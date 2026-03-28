@@ -2,25 +2,33 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import css from './Modal.module.css';
 
-interface Props {
+interface ModalProps {
   children: React.ReactNode;
   onClose: () => void;
 }
 
-const modalRoot = document.querySelector('#modal-root') as HTMLElement;
+const modalRoot = document.querySelector('#modal-root');
 
-export default function Modal({ children, onClose }: Props) {
+export default function Modal({ children, onClose }: ModalProps) {
+  // Додаємо логіку блокування прокручування
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.code === 'Escape') onClose();
+    // Зберігаємо оригінальний стиль, щоб повернути його назад
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    
+    // Блокуємо прокручування при монтуванні
+    document.body.style.overflow = 'hidden';
+
+    // Функція очищення (спрацює при закритті модалки)
+    return () => {
+      document.body.style.overflow = originalStyle;
     };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
+  }, []);
+
+  if (!modalRoot) return null;
 
   return createPortal(
-    <div className={css.backdrop} onClick={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true">
-      <div className={css.modal}>
+    <div className={css.backdrop} onClick={onClose}>
+      <div className={css.modal} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>,
