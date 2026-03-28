@@ -47,6 +47,10 @@ export const createNote = async (noteData: CreateNoteData): Promise<Note> => {
   return response.data;
 };
 
-export const deleteNote = async (id: string): Promise<void> => {
-  await noteApi.delete(`/notes/${id}`);
+export const deleteNote = async (id: string): Promise<Note> => {
+  // Ми вказуємо <Note>, щоб axios знав тип даних у response.data
+  const response = await noteApi.delete<Note>(`/notes/${id}`);
+  
+  // Повертаємо дані видаленої нотатки
+  return response.data;
 };

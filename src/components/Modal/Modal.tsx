@@ -10,19 +10,25 @@ interface ModalProps {
 const modalRoot = document.querySelector('#modal-root');
 
 export default function Modal({ children, onClose }: ModalProps) {
-  // Додаємо логіку блокування прокручування
   useEffect(() => {
-    // Зберігаємо оригінальний стиль, щоб повернути його назад
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    
-    // Блокуємо прокручування при монтуванні
-    document.body.style.overflow = 'hidden';
+    // 1. Обробка натискання клавіші Escape
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
 
-    // Функція очищення (спрацює при закритті модалки)
+    // 2. Блокування скролу та додавання слухача клавіатури
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    // 3. Очищення при розмонтуванні (закритті)
     return () => {
       document.body.style.overflow = originalStyle;
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [onClose]); // Додаємо onClose у залежності для безпеки
 
   if (!modalRoot) return null;
 

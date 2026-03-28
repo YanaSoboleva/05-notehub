@@ -13,10 +13,10 @@ export default function NoteList({ notes }: NoteListProps) {
   // 1. Створюємо мутацію прямо всередині компонента
   const mutation = useMutation({
     mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => {
-      // 2. Інвалідуємо кеш після успішного видалення
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-    },
+    onSuccess: (deletedNote) => {
+    console.log(`Видалено нотатку: ${deletedNote.title}`);
+    queryClient.invalidateQueries({ queryKey: ['notes'] });
+  },
     onError: (error) => {
       console.error("Помилка при видаленні нотатки:", error);
       alert("Не вдалося видалити нотатку. Спробуйте ще раз.");
